@@ -74,3 +74,44 @@ sykkel %>%
   mutate(duration = ended_at - started_at) %>%     # making the new column
   select(ended_at, started_at, duration)           # want to see only these 3 columns
 
+# finding shortest duration:
+sykkel %>% 
+  arrange(duration) %>% 
+  slice(1:5) %>%          # to see the top 5 shortest duration
+  select(duration)
+# A: shortest duration was 61 seconds
+
+# finding longest duration:
+sykkel %>% 
+  arrange(desc(duration)) %>% 
+  slice(1:5) %>% 
+  select(duration)
+# A: longest duration was 164 999 seconds, which is ~ 46 hours
+
+
+# Q: Plot the distribution of hire duration.
+
+# time should be on the x axis, number on the y axis
+# plotting:
+sykkel %>% 
+  count(duration) %>% 
+  ggplot(aes(x = duration, y = n)) + geom_line() + coord_trans(x="log10")
+# coord_trans(x="log10") makes the x axis logarithmic
+
+
+# Q: What is the median duration of hire from each station?
+sykkel %>% 
+  group_by(start_station_name) %>% 
+  summarise(median_duration = median(duration)) %>% 
+  view()
+
+# A: answers can be seen by viewing this
+
+
+# Q: Map this information
+
+sykkel %>% 
+  group_by(start_station_name) %>% 
+  nest() %>% 
+  mutate(mod = map(data, ~lm(median(duration) ~ start_station_name)))
+#this is not working!
