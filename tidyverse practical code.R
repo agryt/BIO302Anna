@@ -1,5 +1,7 @@
 #### TIDYVERSE PRACTICAL ####
 
+#### EXPLORING THE DATA ####
+
 # loading tidyverse
 library(tidyverse)
 
@@ -51,6 +53,8 @@ end_sykkel <- sykkel %>%
 
 # joining the two tables:
 joined_sykkel <- inner_join(start_sykkel, end_sykkel, by = c("start_station_name" = "end_station_name"))
+
+# need to use gather to join them
 
 # making a bar chart
 
@@ -111,7 +115,61 @@ sykkel %>%
 # Q: Map this information
 
 sykkel %>% 
-  group_by(start_station_name) %>% 
-  nest() %>% 
-  mutate(mod = map(data, ~lm(median(duration) ~ start_station_name)))
-#this is not working!
+  group_by(start_station_name, start_station_latitude, start_station_longitude) %>% 
+  summarise(median_duration = median(duration)) %>% 
+  ggplot(aes(x = start_station_longitude, y = start_station_latitude)) + geom_point()
+# this gives a coordinate system with dots
+
+
+# Q: Are there any significant differences in duration between stations.
+
+sykkel %>% count(start_station_name) %>% view() # needed to see order of stations
+
+lm(data=sykkel, duration~start_station_name) %>% 
+  anova
+# p-value is 8.925e-08, so there is a significant difference
+# but between what stations?
+lm(data=sykkel, duration~start_station_name) %>% 
+  summary()
+# here it is possible to see that for the first station, ADO arena, the duration is significantly different from the stations Høgskulen på Vestlandet, Lysverket, and Verftet.
+
+# it is possible to check this for all stations, see lecture 4 in BIO300B
+
+
+# Q: How far does a typical cyclist travel?
+
+sykkel %>% 
+  group_by(start_station_latitude, start_station_longitude, end_station_latitude, end_station_longitude) %>% 
+  mutate(distance = sqrt((start_station_latitude - end_station_latitude)^2 + (start_station_longitude - end_station_longitude)^2), abs(distance)) %>% 
+  ungroup() %>% 
+  summarise(mean_distance = mean(distance))
+
+# A: in latitude + longitude, the mean distance is 0.0152
+
+
+# Q: What is the relationship between distance travelled and time taken?
+
+sykkel %>% 
+  mutate(distance = sqrt((start_station_latitude - end_station_latitude)^2 + (start_station_longitude - end_station_longitude)^2), abs(distance)) %>% 
+  ggplot(aes(x = distance, y = duration)) + geom_point() + stat_smooth(method = "lm", formula = y~x, se = F) 
+# the regression line (blue) shows the linear relationship
+
+
+# Q: How fast was the fastest cyclist (for simplicity assume a straight line of travel)
+
+sykkel %>% 
+  mutate(speed = abs(sqrt((start_station_latitude - end_station_latitude)^2 + (start_station_longitude - end_station_longitude)^2)) / duration) %>% 
+  arrange(desc(speed)) %>% 
+  slice(1:5) %>% 
+  select(speed)
+
+# A: the fastest person travelled at coordinates/seconds = 0.000117
+
+
+
+#### DAY AND TIME ####
+
+# With help from the `lubridate` package
+
+# Q: How does the number of hires vary throughout the day and week?
+
