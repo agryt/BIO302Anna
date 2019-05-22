@@ -90,6 +90,7 @@ mod_n %>%
 
 #### REAL DATA ####
 
+
 # 1. The built-in dataset LakeHuron has annual lake level data from 1885 to 1972 Load the data with the command data(LakeHuron)
 data("LakeHuron")
 
@@ -97,7 +98,63 @@ data("LakeHuron")
 # 2. Plot the data.
 plot(LakeHuron)
 
+
 # 3. Regress the LakeHuron lake level against year using a linear model. Is there a significant trend?
 # regression -> lm
+# making the model
+reg <- lm(LakeHuron ~ time(LakeHuron), data = LakeHuron)
+# anova to test it
+anova(reg)
+# p-value: 3.545e-08
+summary(reg)
+# p-value: 3.55e-08
+# there is a significant trend
 
 
+# 4. Plot the autocorrelation and partial autocorrelation functions for the residuals from this regression. Interpret them.
+acf(resid(reg))
+# this gives a graph showing the ACF
+pacf(resid(reg))
+# this gives a graph showing the partial ACF
+# this data is correlated because the ACF follows the pattern of the weight matrix for correlated observations almost exactly, and the partial ACF is close to 0
+
+
+# 5. Fit an autoregressive models to the residuals. Compare the results with your interpretation of the PACF plot.
+ar(x = resid(reg))
+# results:
+#Coefficients:
+#     1        2  
+#0.9714  -0.2754 
+# this shows the rho values
+# these values support that it is autoregressive
+
+
+# 6. Fit a gls model using a corAR1 correlation structure. Test if the correlation structure is necessary. Is the trend significant?
+year <- time(LakeHuron)
+# gls model WITH autocorrelation
+gls_lh <- gls(LakeHuron ~ year, corr = corAR1())
+summary(gls_lh)
+# p-value: 0.1282
+
+# gls model WITHOUT autocorrelation
+gls_lh2 <- gls(LakeHuron ~ year)
+summary(gls_lh2)
+# p-value: 0
+
+# comparing the two gls models:
+anova(gls_lh, gls_lh2)
+# gls_h, the model with autocorrelation has a higher df and lower AIC, so it is better
+# this difference is significant (p-value: <.0001)
+
+# by using
+summary(gls_lh)
+# the p-value is 0.1282 for the slope, meaning the trend is not significant
+
+
+# 7. Fit a gls model using a corARMA correlation structure with two AR terms. Is this model an improvement?
+
+gls_arma <- gls(LakeHuron ~ year, corr = corARMA(p = 2))
+summary(gls_arma)
+# the parameter estimates Phi1 =  1.0203418 and Phi2 = -0.2741249 are similar to the coefficients from the ar model in task 5
+# p-value: 0.0223
+# this p-value is lower than the p-value for gls_lh, so this is a better model
