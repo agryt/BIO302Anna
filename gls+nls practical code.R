@@ -1,5 +1,7 @@
 #### GLS AND NLS PRACTICAL ####
 
+#### GLS ####
+
 # using the built in data "iris"
 
 # Q: Make a plot to show how `Petal.Length` varies between species.
@@ -176,3 +178,53 @@ anova(mod2, mod3)
 #mod3     2  6 137.0802 155.0228 -62.5401 1 vs 2 55.9252  <.0001
 
 # A: the AIC is lower for the more complex model -> is useful to allow the variance to vary between species (mod3 is better)
+
+
+#### NLS ####
+
+# Q: Import data amount.csv
+amount <- readr::read_csv("amount.csv")
+# the readr::read_csv is usually a better way to import than read.csv
+
+
+# Q: Do a non-linear regression
+# first need to load library nlme
+library(nlme)
+# making the model
+amount.nls <- nls(amount ~ b0 + b1 * exp(b2 * calcium), data = amount, start = c(b0 = 0, b1 = 20, b2 = -1))
+summary(amount.nls)
+# output: 
+##Formula: amount ~ b0 + b1 * exp(b2 * calcium)
+
+##Parameters:
+##   Estimate Std. Error t value Pr(>|t|)    
+##b0   0.4206     2.1141   0.199 0.844676    
+##b1  43.5721    10.7301   4.061 0.000813 ***
+##b2  -0.3435     0.1270  -2.705 0.015025 *  
+##  ---
+##  Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+##Residual standard error: 6.139 on 17 degrees of freedom
+
+##Number of iterations to convergence: 6 
+##Achieved convergence tolerance: 8.991e-06
+
+# plotting the model
+library(ggplot2)
+ggplot(cbind(amount, fit = fitted(amount.nls)), aes(x = calcium, y = amount)) + geom_point() + geom_line(aes(y = fit))
+
+
+# Q: Interpret the results
+# the estimate column shows the least squares estimates
+# the std. error column shows the standard errors of these estimates
+# the t value column shows the ratio of each parameter estimate to its standard error
+# The residual standard deviation is the estimate of sigma
+# this is from: http://stat.wvu.edu/~jharner/courses/stat512/docs/Nonlinear-Regression.pdf
+
+
+# What is the expected value if calcium = 10?
+coefs <- coef(amount.nls)
+Ca <- 10
+coefs["b0"] + coefs["b1"] * exp(coefs["b2"] * Ca)
+
+# A: b0 = 1.825287
