@@ -96,7 +96,7 @@ ggplot(cbind(sorich, fit = fitted(fit_glm)), aes(x = cover, y = nsp)) +
 
 ``` {r task six}
 
-anova(fit_glm)
+anova(fit_glm, test = "Chisq")
 
 ```
 
@@ -106,13 +106,56 @@ Since the residual deviance (1315) is (much) larger than the residual df (690), 
 
 *8. How does the width of the confidence interval at cover = 10 change when over-dispersion is allowed for*
 
+On the model as it is, without allowing for over-dispersion:
+
 ``` {r task eight}
 
-pred <- predict(fit_glm, newdata = data.frame(cover = 10), type = "confidence interval")
-view(pred)
+pred <- predict(fit_glm, newdata = data.frame(cover = 10), se.fit = TRUE)
 
 ```
 
+Confidence interval: 2.197233 +- 0.06528709
+
+Allowing for over-dispersion:
+
+``` {r task eight}
+
+fit_glm2 <- glm(nsp ~ cover, data = sorich, family = quasipoisson)
+anova(fit_glm2, test = "Chisq")
+
+```
+
+Confidence interval when allowing for over-dispersion:
+
+``` {r task eight}
+
+pred2 <- predict(fit_glm2, newdata = data.frame(cover = 10), se.fit = TRUE)
+view(pred2)
+
+```
+
+Confidence interval: 2.197233 +- 0.09022331
+
+The confidence interval gets wider when allowing for over-dispersion. 
+
+*9. Do the grasses differ from the herb, i.e. include the factor grasherb and test its significance?*
+
+Including grasherb in the model:
+
+``` {r task nine}
+
+fit_glm3 <- glm(nsp ~ cover*grasherb, data = sorich, family = quasipoisson)
+anova(fit_glm3, test = "Chisq")
+
+```
+
+The effect of grasherb is significant since the cover:grasherb is significant (9.29e-12). This means that this should be included in the model. 
+
+### how much does over-dispersion affect results
+
+1. Use `sample()` to randomise the response in sorich to remove the relationship between the preictor and response.
 
 
-9. Do the grasses differ from the herb, i.e. include the factor grasherb and test its significance?
+
+2. Test if a Poisson GLM with cover as a predictor is significant
+3. Repeat 1000 times and find the distribution of p-values
