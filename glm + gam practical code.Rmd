@@ -1,0 +1,118 @@
+---
+title: "glm+gam practical"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## glm & gam practical
+
+### poisson glm
+
+*1. Import sorich.csv*
+
+```{r task one}
+library(tidyverse)
+
+sorich <- read_csv('sorich.csv')
+view(sorich)
+
+ggplot(sorich, aes(x = cover, y = nsp)) + geom_point()
+
+```
+
+*2. Fit a linear model for species richness against cover assuming a Normal distribution. *
+
+``` {r task two}
+
+fit_lm <- glm(nsp ~ cover, data = sorich)
+anova(fit_lm)
+summary(fit_lm)
+
+```
+
+P-value is < 2e-16
+
+``` {r task two}
+
+ggplot(cbind(sorich, fit = fitted(fit_lm)), aes(x = cover, y = nsp)) + 
+  geom_point() + 
+  geom_line(aes(y = fit), colour = "red") +
+  labs(y = "Species richness", x = "Cover")
+
+```
+
+*3. Study the diagnostic plots*
+
+For the linear model:
+
+``` {r task three}
+
+par(mfrow=c(2,2))
+plot(fit_lm)
+
+```
+
+Interpreting the diagnostic plots:
+Residuals vs Fitted: almost a straight line, good!
+Normal Q-Q: not following the line at the top, not good. I think this means that the residuals are not normally distributed. 
+Scale-Location: almost a straight line, good!
+Residuals vs Leverage: all points are within the dotted lines, good!
+
+For the glm model:
+
+
+
+*4. What distribution is the response?*
+
+The distribution for the response is Poisson because there is a categorical predictor. 
+
+*5. Do an appropriate analysis*
+
+Since the distribution of the response is not normal, but Poisson, we use a generalised linear model. 
+
+``` {r task five}
+
+fit_glm <- glm(nsp ~ cover, data = sorich, family = poisson)
+anova(fit_glm, test = "Chisq")
+summary(fit_glm)
+
+```
+
+The p-value in the summary is < 2e-16. 
+
+``` {r task two}
+
+ggplot(cbind(sorich, fit = fitted(fit_glm)), aes(x = cover, y = nsp)) + 
+  geom_point() + 
+  geom_line(aes(y = fit), colour = "blue") +
+  labs(y = "Species richness", x = "Cover")
+
+```
+
+*6. Check for over-dispersion*
+
+``` {r task six}
+
+anova(fit_glm)
+
+```
+
+*7. Interpret the results*
+
+Since the residual deviance (1315) is (much) larger than the residual df (690), there is overdispersion. 
+
+*8. How does the width of the confidence interval at cover = 10 change when over-dispersion is allowed for*
+
+``` {r task eight}
+
+pred <- predict(fit_glm, newdata = data.frame(cover = 10), type = "confidence interval")
+view(pred)
+
+```
+
+
+
+9. Do the grasses differ from the herb, i.e. include the factor grasherb and test its significance?
