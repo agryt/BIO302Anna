@@ -1,0 +1,151 @@
+---
+title: "Mode selection practical code"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Exercise Diagnostics
+
+```{r packages}
+
+library(tidyverse)
+library(AICcmodavg)
+
+```
+
+*1. Import sorich.csv*
+
+```{r one}
+
+sorich <- read_csv('sorich.csv')
+view(sorich)
+
+ggplot(sorich, aes(x = cover, y = nsp, colour = grasherb)) + geom_point()
+
+```
+
+*2. Fit a linear model for nsp as a function of cover.*
+
+```{r two}
+
+fit_lm <- lm(nsp ~ cover, data = sorich)
+summary(fit_lm)
+
+ggplot(cbind(sorich, fit = fitted(fit_lm)), aes(x = cover, y = nsp)) + 
+  geom_point() + 
+  geom_line(aes(y = fit), colour = "red") +
+  labs(y = "Species richness", x = "Cover")
+
+```
+The plot shows the data points and the line given by the linear model. 
+
+*3. Examine the diagnostics graphs. What suggests this may not be an appropriate model to fit?*
+
+```{r three}
+
+par(mfrow=c(2,2))
+plot(fit_lm)
+
+```
+Looking at the diagnostics plots, 3 of them look okay, but the Normal Q-Q has problems towards the end, where the points move quite away from the line. This indicates that the residuals are not normally distributed, which indicates that a different model should be used, since the lm is only applicable if the residuals are normally distributed.
+
+*4. Import bird1.csv*
+
+```{r four}
+
+bird <- read_csv('bird1.csv')
+view(bird)
+
+ggplot(bird, aes(x = sitek, y = weight, colour = treat)) + 
+  geom_point() +
+  labs(x = "Site", y = "Weight", colour = "Treatment")
+
+```
+The plot shows the data points with the site at the x-axis, weight at the y-axis and treatment as different colours. Temperature is not included. 
+
+*5. Fit a linear model for weight as a function of temp.*
+
+```{r five}
+
+fit_lm2 <- lm(weight ~ temp, data = bird)
+summary(fit_lm2)
+
+ggplot(cbind(bird, fit = fitted(fit_lm2)), aes(x = temp, y = weight)) +
+  geom_point() +
+  geom_line(aes(y = fit), colour = "red") +
+  labs(x = "Temperature", y = "Weight")
+
+```
+The plot shows the data points with temperature on the x-axis and weight on the y-axis. It also shows the line given by the linear model. 
+
+*6. Examine the diagnostics graphs. Do they indicate that any action needs to be taken.*
+
+```{r six}
+
+par(mfrow=c(2,2))
+plot(fit_lm2)
+
+```
+The residuals vs fitted plot is not quite a straight line, but not enough to worry about (this would mean it has non-linear patterns). The others are ok. 
+
+*7. Fit a model that includes a quadratic term for temp.*
+
+```{r seven}
+
+fit_lm3 <- lm(weight ~ temp + I(temp^2), data = bird)
+summary(fit_lm3)
+
+ggplot(cbind(bird, fit = fitted(fit_lm3)), aes(x = temp, y = weight)) +
+  geom_point() +
+  geom_line(aes(y = fit), colour = "red") +
+  labs(x = "Temperature", y = "Weight")
+
+```
+The figure shows the data points with site on the x-axis, weight on the y-axis, and the colour of the points indicate temperature. The line shows the line given by the model. 
+
+*8. Compare the diagnostics plots with those from the previous model. Comment on any changes.*
+
+```{r eight}
+
+par(mfrow=c(2,2))
+plot(fit_lm3)
+
+```
+Compared to the previous model, the residuals vs fitted plot has the line moving down compared to the straight line, while for the last model, it moved up. In the normal Q-Q, the end points are no longer moving a bit off the line. The scale-location is very similar, but moves up a bit at the end, which the last one did not. In the residuals vs leverage, the points are spread out a bit more for this model than the last, but not enough to be worrying. 
+
+*9. Extract the AIC from both  models (hint use function AIC). Which is the better model?*
+
+```{r nine}
+
+AIC(fit_lm2)
+AIC(fit_lm3)
+
+```
+fit_lm2, the first model, has AIC = 125.4914
+fit_lm3, the second model, has AIC = 120.9474
+
+Since the second model has the lowest AIC, this is the best model. 
+
+*10. Calculate the deltaAIC for each model.*
+
+```{r ten}
+
+mods <- list()
+mods$m0 <- lm(weight ~ temp, data = bird)
+mods$m1 <- lm(weight ~ sitek * temp, data = bird)
+
+aictab(mods)
+
+```
+The delta AIC for the second model is 0.00, and for the first model it is 3.38. This means that the second model is the best. 
+
+*11. Calculate the AIC weights for each model. Interpret these weights.*
+
+The AIC weights are shown in the same table as the delta AIC in the last task. For the second model this is 0.84, and 0.16 for the first. This means that the second model has a 84% chance of being the best model. 
+
+12. With the built-in data set `swiss` (use `data(swiss)`), make ols model between Fertility and all other variables. Find the VIF of each predictor. Are there any problem variables?
+
+13. Use `MASS::mvrnorm()` to simulate 100 observation of two predictor variables (x and z) with a given correlation. Simulate a response variable y = b0 + b1x + b2z. Test how the uncertainty in the coefficients changes with the correlation (and hence vif) of the predictor variables.
