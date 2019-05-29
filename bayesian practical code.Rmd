@@ -1,0 +1,80 @@
+---
+title: "Bayesian practical code"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is from http://www.sumsar.net/files/posts/2017-bayesian-tutorial-exercises/modeling_exercise1.html
+
+## Exercise 1: Bayesian A testing for Swedish Fish Incorporated (B comes later)
+
+Swedish Fish Incorporated is the largest Swedish company delivering fish by mail order. They are now trying to get into the lucrative Danish market by selling one year Salmon subscriptions. The marketing department have done a pilot study and tried the following marketing method:
+
+A: Sending a mail with a colorful brochure that invites people to sign up for a one year salmon subscription.
+
+The marketing department sent out 16 mails of type A. Six Danes that received a mail signed up for one year of salmon and marketing now wants to know, how good is method A?
+
+### Question I) 
+
+*Build a Bayesian model that answers the question: What would the rate of sign-up be if method A was used on a larger number of people?*
+
+Hint 1: The answer is not a single number but a distribution over probable rates of sign-up.
+
+Hint 2: As part of you generative model you’ll want to use the binomial distribution, which you can sample from in R using the  rbinom(n, size, prob). The binomial distribution simulates the following process n times: The number of “successes” when performing size trials, where the probability of “success” is prob.
+
+Hint 3: A commonly used prior for the unknown probability of success in a binomial distribution is a uniform distribution from 0 to 1. You can draw from this distribution by running runif(1, min = 0, max = 1)
+
+Hint 4: Here is a code scaffold that you can build upon.
+
+```{r one}
+
+# number of random draws from the prior
+n_draws <- 10000
+
+# sample n_draws draws from the prior
+prior <- runif(n = n_draws)
+
+# make histogram
+hist(prior)
+
+# defining the generative model
+# this is not an effective way to do this, can use stan
+generative_model <- function(size, rate) {
+  k <- rbinom(n = 1, size = size, prob = rate)
+  return(k)
+}
+
+# checking the model
+generative_model(size = 16, rate = 0.5)
+# it is giving me random numbers like it should
+
+# simulate data using parameters from the prior and the generative model
+sim_data <- rep(NA, n_draws)
+for(i in 1:n_draws) {
+  sim_data[i] <- generative_model(size = 16, rate = prior[i])
+}
+
+# filter off all draws that do not match the data
+observed_data <- 6
+posterior <- prior[sim_data == observed_data]
+
+# get histogram:
+hist(posterior)
+
+# find out how many the model filtered out
+length(posterior)
+# length = 576
+
+# find median:
+median(posterior)
+# 0.3913476
+
+# credability interval of 95%
+quantile(posterior, c(0.025, 0.0975))
+#      2.5%     9.75% 
+# 0.1931244 0.2493784
+
+```
