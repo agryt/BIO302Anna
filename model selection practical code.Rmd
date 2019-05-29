@@ -13,6 +13,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
 library(AICcmodavg)
+library(olsrr)
+library(MASS)
 
 ```
 
@@ -146,6 +148,34 @@ The delta AIC for the second model is 0.00, and for the first model it is 3.38. 
 
 The AIC weights are shown in the same table as the delta AIC in the last task. For the second model this is 0.84, and 0.16 for the first. This means that the second model has a 84% chance of being the best model. 
 
-12. With the built-in data set `swiss` (use `data(swiss)`), make ols model between Fertility and all other variables. Find the VIF of each predictor. Are there any problem variables?
+*12. With the built-in data set `swiss` (use `data(swiss)`), make ols model between Fertility and all other variables. Find the VIF of each predictor. Are there any problem variables?*
 
-13. Use `MASS::mvrnorm()` to simulate 100 observation of two predictor variables (x and z) with a given correlation. Simulate a response variable y = b0 + b1x + b2z. Test how the uncertainty in the coefficients changes with the correlation (and hence vif) of the predictor variables.
+```{r twelve}
+
+data("swiss")
+view(swiss)
+
+fit_lm4 <- lm(Fertility ~ Agriculture + Examination + Education + Catholic + Infant.Mortality, data = swiss)
+summary(fit_lm4)
+
+olsrr::ols_vif_tol(fit_lm4)
+
+```
+The VIF values are:
+Agriculture: 2.284129		
+Examination: 3.675420		
+Education: 2.774943		
+Catholic:	1.937160		
+Infant.Mortality:	1.107542
+
+The variance inflation factor (VIF) is a measure of how much variance of the regression coefficient is "inflated" by correlation among the predictor variables. If they are above 10, they are a cause of concern, some argue the threshold should be at 3. 
+Given this, we can assume that the VIF for Examination could be a cause for concern, but not any of the others. 
+
+
+*13. Use `MASS::mvrnorm()` to simulate 100 observation of two predictor variables (x and z) with a given correlation. Simulate a response variable y = b0 + b1x + b2z. Test how the uncertainty in the coefficients changes with the correlation (and hence vif) of the predictor variables.*
+
+```{r thirteen}
+
+MASS:mvrnorm(n = 100, )
+
+```
