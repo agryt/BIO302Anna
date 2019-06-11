@@ -1,0 +1,101 @@
+---
+title: "exam_AG"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Exam BIO302
+
+```{r packages}
+
+library(tidyverse)
+
+```
+
+**1) A statistical test has a p-value of 0.04.
+ - How should this p-value be interpreted? Is it good evidence against the null hypothesis?**
+ 
+This p-value tells us that there is a 4% chance of the value 0 being included in the confidence interval. It does not necessarily give useful information. Something could be of statistical value without being of practical value, and a result could be very interesting even though it is not statistically significant. This means that a p-value alone is not good evidence against the null hypothesis, the effect sizes give much more useful information. 
+Often, the limit for the p-value is set at 0.05, so in this case a p-value of 0.04 is very close to the limit, something that should be concidered even when using p-values alone. 
+
+**2) The term "statistical significance" should be abandoned. Discuss.**
+
+It is possible for a result to be statistically significant (i.e. significant based on p-value) without it being practically significant, and vice versa. Therefore, it is important to not rely too heavily on the statistical significance, but also look at other values. The p-value is also possible to "cheat" on. It is not necessarily necessary to abandon the term, but it should not have as much weight as it does now. 
+
+**3) What is meant by the terms HARKING and p-hacking? 
+ - Why are these regarded as questionable research practices?
+ - What strategies will you use to avoid these practices in your thesis/manuscripts.**
+ 
+HARKing is an abbreviation of Hypothesizing After the Results are Known. This means that you make the hypothesis *after* collecting the data, which means that the hypothesis can be influenced by what you already know about your dataset. 
+p-hacking, also called data dredging, is to misuse data analysis, for example by performing many different tests, and present patterns in the data as statistically significant when there is no real effect present. 
+These are questionable research practices because this can lead to showing false results, either on purpose or not. 
+To avoid this in my thesis, I will think about how to perform the analysis before I get my results from my experiments, and prepare a hypothesis beforehand. 
+ 
+**4) What distributions might we expect for 
+ - the number of eggs in a sample of blue tit's nests
+ - the proportion of eggs that hatch in these nests
+ - the thickness of the eggshells
+Explain your answers. What assumptions are required.**
+
+For the number of eggs in a sample of blue tit's nests, the data will be count data, which means that it will have a Poisson distribution. For a Poisson distribution, the variance increases with the mean. Another assumption is that the rate at which eggs are layed, is constant. 
+The proportion of eggs that hatch in these nests will have a binomial distribution, as the eggs will either hatch (1) or not hatch (0). For the binomial distribution, the variance is largest at a mean of 0.5, and decreases towards 0 and 1. All events, i.e. all eggs, must have a constant probability of success, i.e. hatching. 
+The thickness of the eggshells is a continous variable, an will thus have a normal distribution. For a normal distribution, the variance must be constant. 
+
+**5) Explain what autocorrelation is, how it can be detected and how its effect on regression can be controlled for.**
+
+
+
+**6) The `lynx` data (available with-in R) show the number of lynx (norsk: gaupe) trapped in Canada in 1821-1934. Examine the acf and pacf for these data. What can you infer from these?**
+
+ACF = autocorrelation function
+PACF = 
+
+**7) Chironomid species richness has been recorded in some Norwegian lakes. Three predictor variables are available, water temperature, depth and pH. We want to test the hypothesis that species richness is related to temperature.**
+**The data are in the file chironomid.txt.**
+
+First I converted the txt file to a csv file, this was done in Excel. 
+
+I plot the data to get a look at it. 
+
+```{r question 7}
+
+chiro <- read_csv2('chironomid.csv')
+# here I had to use read_csv2 because of the type of csv I had saved the file as
+
+chiro %>% 
+  ggplot(aes(x = temperature, y = noSpecies)) +
+  geom_point() +
+  labs(x = "Temperature", y = "Number of species")
+
+```
+
+**- What distribution should be assumed for the response variable?**
+
+The response variable in this case is the species richness, and since this is count data, we can assume a Poisson distribution. With this distribution, the variance increases with the mean. 
+
+**- What type of analysis is appropriate?**	
+
+Since the distribution of the response variable is Poisson, not normal, we use a generalised linear model (glm). 
+
+**- Fit an appropriate parametric model to test the hypothesis.**
+
+```{r question 7}
+
+fit.glm <- glm(noSpecies ~ temperature, data = chiro, family = poisson)
+
+```
+
+**- Check the model diagnostics. Justify any changes you need to make to the model.**
+
+**- Predict species richness at -5, 5, and 30°C and show the 95% confidence intevals.**
+
+**- Present the results using both graphs and tables.**
+	
+**- Test if a generalized additive model offers an improved fit.**
+
+**- Can your model be improved by including additional terms?**
+
+**- Write a biological interpretation of your final model.**
