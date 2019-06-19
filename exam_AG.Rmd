@@ -1,69 +1,102 @@
 ---
-title: "exam_AG"
-output: html_document
+title: "Exam BIO302"
+output:
+  html_document: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
-# Exam BIO302
-
-```{r packages}
+```{r include=FALSE}
 
 library(tidyverse)
+library(mgcv)
 
 ```
 
-**1) A statistical test has a p-value of 0.04.
+**1) A statistical test has a p-value of 0.04.  
  - How should this p-value be interpreted? Is it good evidence against the null hypothesis?**
  
-This p-value tells us that there is a 4% chance of the value 0 being included in the confidence interval. It does not necessarily give useful information. Something could be of statistical value without being of practical value, and a result could be very interesting even though it is not statistically significant. This means that a p-value alone is not good evidence against the null hypothesis, the effect sizes give much more useful information. 
-Often, the limit for the p-value is set at 0.05, so in this case a p-value of 0.04 is very close to the limit, something that should be concidered even when using p-values alone. 
+This p-value tells us that there is a 4% chance that we would see the difference we have observed because of random sampling errors, i.e. given that the null hypothesis is right, there is a 4% chance of getting the obtained data. The p-value does not necessarily give useful information. Something could be of statistical value without being of practical value, and a result could be very interesting even though it is not statistically significant. This means that a p-value alone is not good evidence against the null hypothesis, the effect sizes give much more useful information.  
+Often, the limit for the p-value is set at 0.05, so in this case a p-value of 0.04 is very close to the limit, something that should be concidered. 
 
 **2) The term "statistical significance" should be abandoned. Discuss.**
 
-It is possible for a result to be statistically significant (i.e. significant based on p-value) without it being practically significant, and vice versa. Therefore, it is important to not rely too heavily on the statistical significance, but also look at other values. The p-value is also possible to "cheat" on. It is not necessarily necessary to abandon the term, but it should not have as much weight as it does now. 
+It is possible for a result to be statistically significant (i.e. significant based on the p-value) without it being practically significant, and vice versa. Therefore, it is important to not rely too heavily on the statistical significance, but also look at other values: the coefficients. These give more information on the data itself, and not just whether or not the data is likely or not given that the null hypothesis is correct (the p-value). The p-value is also possible to "cheat" on (see next question). It is not necessarily necessary to abandon the term, but it should not have as much weight as it does now. 
 
-**3) What is meant by the terms HARKING and p-hacking? 
- - Why are these regarded as questionable research practices?
+**3) What is meant by the terms HARKING and p-hacking?   
+ - Why are these regarded as questionable research practices?  
  - What strategies will you use to avoid these practices in your thesis/manuscripts.**
  
-HARKing is an abbreviation of Hypothesizing After the Results are Known. This means that you make the hypothesis *after* collecting the data, which means that the hypothesis can be influenced by what you already know about your dataset. 
-p-hacking, also called data dredging, is to misuse data analysis, for example by performing many different tests, and present patterns in the data as statistically significant when there is no real effect present. 
-These are questionable research practices because this can lead to showing false results, either on purpose or not. 
-To avoid this in my thesis, I will think about how to perform the analysis before I get my results from my experiments, and prepare a hypothesis beforehand. 
+HARKing is an abbreviation of **H**ypothesizing **A**fter the **R**esults are **K**nown. This means that you make the hypothesis *after* collecting the data, which means that the hypothesis can be influenced by what you already know about your dataset.  
+p-hacking, also called data dredging, is to misuse data analysis, for example by performing many different tests, and present patterns in the data as statistically significant when there is no real effect present.  
+These are questionable research practices because this can lead to showing false results, either on purpose or not.  
+To avoid this in my thesis and future manuscripts, I will plan how to perform the analysis before I get the results from my experiments, and prepare a hypothesis beforehand. 
  
-**4) What distributions might we expect for 
- - the number of eggs in a sample of blue tit's nests
- - the proportion of eggs that hatch in these nests
- - the thickness of the eggshells
+**4) What distributions might we expect for   
+ - the number of eggs in a sample of blue tit's nests  
+ - the proportion of eggs that hatch in these nests  
+ - the thickness of the eggshells  
 Explain your answers. What assumptions are required.**
 
-For the number of eggs in a sample of blue tit's nests, the data will be count data, which means that it will have a Poisson distribution. For a Poisson distribution, the variance increases with the mean. Another assumption is that the rate at which eggs are layed, is constant. 
-The proportion of eggs that hatch in these nests will have a binomial distribution, as the eggs will either hatch (1) or not hatch (0). For the binomial distribution, the variance is largest at a mean of 0.5, and decreases towards 0 and 1. All events, i.e. all eggs, must have a constant probability of success, i.e. hatching. 
-The thickness of the eggshells is a continous variable, an will thus have a normal distribution. For a normal distribution, the variance must be constant. 
+For the number of eggs in a sample of blue tit's nests, the data will be count data (only whole numbers), which means that it will have a Poisson distribution. For a Poisson distribution, the variance increases with the mean. An assumption here is that the rate at which eggs are layed, is constant.  
+The proportion of eggs that hatch in these nests will have a binomial distribution, as the eggs will either hatch (1) or not hatch (0). For the binomial distribution, the variance is largest at a mean of 0.5, and decreases towards 0 and 1. All events, i.e. all eggs, must have a constant probability of success, i.e. hatching.  
+The thickness of the eggshells is a continous variable, an will thus have a normal distribution. For a normal distribution, the variance must be constant.  
 
 **5) Explain what autocorrelation is, how it can be detected and how its effect on regression can be controlled for.**
 
-
+Autocorrelation occurs when an observation is dependent on time. This means that a value obtained at one time point will be dependent on the ones before it, and the data is thus not uncorrelated and the residuals are not independent. This is important to concider, because if observations are not independent, they will not have a whole degree of freedom. Not controlling for autocorrelation can lead to a too large estimate of n, which leads to a standard error and a p-value that are both too small. An example of autocorrelation occuring is when measuring the growth of an individual over time. The value measured at for example T=6 will depend on the value at T=5, which is dependent on the value at T=4, etc.  
+Autocorrelation can be tested for by performing a Durbin-Watson test. This is done using a function in the library `lmtest` called `dwtest`. Your code will then be: `dwtest(your_model)`. In the output, the DW value will be a number between 0 and 4, where a value of 2 means that there is no autocorrelation. A value of <2 indicates a positive autocorrelation, and a value of >2 indicates a negative autocorrelation.  
+If you do have autocorrelation in your data, and this is of an order of 1, you can control for this by fitting a first order autoregressive model. This is done by adding `corr = corAR1()` to your model, and by performing an anova you can compare this model to the one where you did not account for autocorrelation to see whether it is necessary to include or not. 
 
 **6) The `lynx` data (available with-in R) show the number of lynx (norsk: gaupe) trapped in Canada in 1821-1934. Examine the acf and pacf for these data. What can you infer from these?**
 
-ACF = autocorrelation function
-PACF = 
+First I load the dataset and plot it to get a look at it. 
+
+```{r echo=FALSE, fig.cap="Figure 1. The number of lynx trapped in Canada each year between 1821 and 1934, with the year on the x-axis and number of lynx on the y-axis."}
+
+data("lynx")
+plot(lynx, main = "Lynx trapped in Canada")
+
+```
+
+Then I fit a model and look at the autocorrelation function (acf) and partial autocorrelation function (pacf). 
+
+```{r echo=TRUE}
+
+mod1 <- lm(lynx ~ time(lynx))
+summary(mod1)
+
+```
+
+```{r echo=FALSE, fig.cap="Figure 2. The ACF plot for the lynx data when fitted with a linear model."}
+
+acf(resid(mod1), main = "ACF for residuals of lynx data")
+
+```
+
+The ACF plot indicates that there is seasonality in the data, and that one period lasts about 9-10 lags (in this case one lag is one year). The blue dotted lines indicate at which point the ACF is significantly different from 0, which several of these values are. Since the ACF values are fluctuating, and not exponentially decreasing, there is a negative autocorrelation. 
+
+```{r echo=FALSE, fig.cap="Figure 3. The partial ACF for the lynx data when fitted with a linear model."}
+
+pacf(resid(mod1), main = "Partial ACF for residuals of lynx data")
+
+```
+
+The partial ACF plot also indicates autocorrelation, as there are some significant correlations in the beginning, until lag 8. When fitting an autoregressive model (ARIMA), the number of significant correlations will indicate the order of the autoregressive term. 
 
 **7) Chironomid species richness has been recorded in some Norwegian lakes. Three predictor variables are available, water temperature, depth and pH. We want to test the hypothesis that species richness is related to temperature.**
 **The data are in the file chironomid.txt.**
 
-First I converted the txt file to a csv file, this was done in Excel. 
+First I converted the txt file to a csv file. This was done in Excel by first opening the txt file, and then saving it as a csv file. 
 
-I plot the data to get a look at it. 
+I then plot the data with the relevant terms to get a look at it. It is always a good idea to be able to see the data, as it is often easier to spot mistakes in the process of finding a model. 
 
-```{r question 7}
+```{r include=FALSE}
 
 chiro <- read_csv2('chironomid.csv')
-# here I had to use read_csv2 because of the type of csv I had saved the file as
+# here I had to use read_csv2 because of the type of csv I saved the file as
+
+```
+
+```{r echo=FALSE, fig.cap="Figure 4. The chironomid data plotted with temperature on the x-axis and number of species on the y-axis."}
 
 chiro %>% 
   ggplot(aes(x = temperature, y = noSpecies)) +
@@ -78,24 +111,234 @@ The response variable in this case is the species richness, and since this is co
 
 **- What type of analysis is appropriate?**	
 
-Since the distribution of the response variable is Poisson, not normal, we use a generalised linear model (glm). 
+Since the distribution of the response variable is a Poisson distribution, not a normal distribution, we use a generalised linear model (glm). 
 
 **- Fit an appropriate parametric model to test the hypothesis.**
 
-```{r question 7}
+First I fit the generalised linear model and call it `fit.glm`. Since the response variable has a Poisson distribution, I include `family = poisson` in the model, as a normal distribution otherwise would be assumed. I run an anova analysis and get the summary output, and then I plot it (using ggplot) to be able to see it with the data. A chi square test is used for the anova (`test = "Chisq"`). 
+
+```{r echo=TRUE}
 
 fit.glm <- glm(noSpecies ~ temperature, data = chiro, family = poisson)
+anova(fit.glm, test = "Chisq")
+summary(fit.glm)
 
 ```
 
+```{r echo=FALSE, fig.cap="Figure 5. The chironomid data with the fitted glm shown as the blue line, with temperature on the x-axis and number of species on the y-axis."}
+
+ggplot(cbind(chiro, fit = fitted(fit.glm)), aes(x = temperature, y = noSpecies)) + 
+  geom_point() +
+  geom_line(aes(y = fit), colour = "blue") +
+  labs(x = "Temperature", y = "Number of species")
+
+```
+
+By looking at the output from the anova test, we can see that the residual deviance is much larger than the residual df. This means that there is overdispersion. 
+
+Because of this, I use a quasi model instead. I fit the new model, calling it `fit.glm0`, run an anova analysis, and get the summary output. I also plot this new model using ggplot. 
+
+```{r echo=TRUE}
+
+fit.glm0 <- glm(noSpecies ~ temperature, data = chiro, family = quasipoisson)
+anova(fit.glm0, test = "Chisq") 
+summary(fit.glm0)
+
+```
+
+```{r echo=FALSE, fig.cap="Figure 6. The chironomid data with the fitted glm using the quasipoisson family shown as the blue line, with temperature on the x-axis and number of species on the y-axis."}
+
+ggplot(cbind(chiro, fit = fitted(fit.glm0)), aes(x = temperature, y = noSpecies)) + 
+  geom_point() +
+  geom_line(aes(y = fit), colour = "blue") +
+  labs(x = "Temperature", y = "Number of species")
+
+```
+
+The quasi model gives the same coefficients, and thus the same line in the figure, but has a wider confidence interval. It is however still clear from the figure that this model is not ideal for this data, which is one of the reasons why checking the model diagnostics is important. 
+
 **- Check the model diagnostics. Justify any changes you need to make to the model.**
+
+```{r echo=FALSE, fig.cap="Figure 7. Diagnostics plots (Residuals vs Fitted, Normal Q-Q, Scale-Location, and Residuals vs Leverage) for the model `fit.glm0`, the glm of the chironomid data with temperature as the predictor variable and number of species as the response variable, with the quasipoisson family."}
+
+# getting the model diagnostics plots: 
+par(mfrow=c(2,2))
+plot(fit.glm0)
+
+```
+
+The Residuals vs Fitted plot should be a straight line close to 0. The lowest point is almost at -4, which is lower than it should be. There also appears to be a non-linear pattern in the data, as the line is not straight. If the data had a linear pattern, the points should here not show a pattern, but be randomly distributed in the plot. Because of the pattern showed here, we assume that the relationship between these variables is polynomial. 
+
+The other plots look okay: the Normal Q-Q plot has the points all close to the diagonal line, the line in the Scale-Location plot is almost straight, and in the Residuals vs Leverage plot, all points are within the lines that show Cook's distance. 
+
+I make a new model, `fit.glm1`, including the polynomial relationship. First I fit the model, then I run an anova to get the output, and get the summary output. I also plot the new model onto the data using ggplot. 
+
+```{r echo=TRUE}
+
+fit.glm1 <- glm(noSpecies ~ temperature + I(temperature^2), data = chiro, family = quasipoisson)
+anova(fit.glm1, test = "Chisq") 
+summary(fit.glm1)
+
+```
+
+```{r echo=FALSE, fig.cap="Figure 8. The chironomid data with the fitted glm with a polynomial relationship and using the quasipoisson family shown as the blue line, with temperature on the x-axis and number of species on the y-axis."}
+
+ggplot(cbind(chiro, fit = fitted(fit.glm1)), aes(x = temperature, y = noSpecies)) + 
+  geom_point() +
+  geom_line(aes(y = fit), colour = "blue") +
+  labs(x = "Temperature", y = "Number of species")
+
+```
+
+To check if the more complicated model is necessary, I do an anova test to compare the two models. 
+
+```{r}
+
+anova(fit.glm0, fit.glm1, test = "Chisq")
+
+```
+
+As the residual deviance is lower in the polynomial model (`fit.glm1`), this is a better model with less overdispersion. 
 
 **- Predict species richness at -5, 5, and 30°C and show the 95% confidence intevals.**
 
+```{r echo=TRUE}
+
+pred.temp <- data.frame(temperature = c(-5, 5, 30)) # making a new dataframe with temperature values -5, 5 and 30
+pred <- predict(fit.glm1, newdata = pred.temp, type = "response", se.fit = TRUE) # predicting the response value (noSpecies) for these temperatures
+pred
+
+# upper 95% confidence interval at -5°C:
+0.7759786 + 1.96 * 0.2727142
+# lower 95% confidence interval at -5°C:
+0.7759786 - 1.96 * 0.2727142
+
+# upper 95% confidence interval at 5 °C:
+9.5702664 + 1.96 * 0.7486155
+# lower 95% confidence interval at 5 °C:
+9.5702664 - 1.96 * 0.7486155
+
+# upper 95% confidence interval at 30 °C:
+14.0652390 + 1.96 * 3.4370601
+# lower 95% confidence interval at 30 °C:
+14.0652390 - 1.96 * 3.4370601
+
+```
+
+Since we are predicting number of species, I have used no decimals in the answers, as you cannot have for example 2.7 species in a given area. 
+
+Prediction for temperature = -5: 1   
+Prediction for temperature = 5: 10   
+Prediction for temperature = 30: 14   
+
+The upper limit of the 95% confidence interval at -5°C is 1.310498, while the lower limit is 0.2414588. The upper limit of the 95% confidence interval at 5°C is 11.03755, and the lower limit is 8.10298. The upper limit of the 95% confidence interval at 30°C is 20.80188. The lower limit is 7.328601. These values are all calculated in the chunk above. 
+
+This gives these 95% confidence intervals, when not including decimals:  
+-5°C: 0 - 1   
+5°C: 8 - 11  
+30°C: 7 - 21  
+
 **- Present the results using both graphs and tables.**
-	
+
+To be able to present these results in a figure, I first had to create a new dataframe that included the predicted species richness (noSpecies) and the 95% confidence interval of these predicted values. Then I could use ggplot to plot it. 
+
+```{r echo=FALSE, fig.cap="Figure 9. The chironomid data with temperature on the x-axis and number of species on the y-axis. The data points are shown as grey points, while the black points are the predicted values at the temperatures -5°C, 5°C and 30°C, shown with the confidence intervals of these values. The blue line shows the fitted polynomial glm."}
+
+# making a new dataframe with temperature and predicted number of species for the 3 relevant temperatures: 
+predicted0 <- data.frame(temperature = c(-5, 5, 30), noSpecies = c(pred$fit))
+# making a new dataframe that includes the standard error (se) and confidence interval (ci):
+predicted <- predicted0 %>% 
+  mutate(se = pred$se.fit, ci = 1.96 * se) # use 1.96 because we want the 95% confidence interval
+
+# making the plot:
+ggplot(cbind(chiro, fit = fitted(fit.glm1)), aes(x = temperature, y = noSpecies)) + 
+  geom_point(colour = "gray") + # adding the points from the chironoid dataset
+  geom_point(data = predicted) + # adding the points from the new dataset with the predicted values
+  geom_pointrange(data = predicted, aes(ymin = noSpecies-ci, ymax = noSpecies+ci), size = .3) + # to show the confidence interval for the predicted values
+  geom_line(aes(y = fit), colour = "blue") +
+  labs(x = "Temperature", y = "Number of species")
+
+```
+
+The table below shows the same results as the black points in the figure above, except the values here do not include any decimals. The table also includes the standard error, which is used to calculate the confidence interval. 
+
+Table 1. The predicted number of species for the three temperatures -5°C, 5°C and 30°C, and the calculated lower 95% confidence interval (CI), upper 95% CI, and standard error for these predictions. 
+```{r echo=FALSE}
+
+pred.table <- matrix(c(1, 0, 1, 0.27, 10, 8, 11, 0.75, 14, 7, 21, 3.44), ncol = 4, byrow = TRUE) # making a matrix with the values calculated for noSpecies, lower ci, upper ci, and se for the three temperatures
+colnames(pred.table) <- c("Number of species", "Lower CI", "Upper CI", "Standard error") # making the column names
+rownames(pred.table) <- c("-5°C", " 5°C", "30°C") # making the row names
+pred.table <- as.table(pred.table)
+pred.table
+
+```
+
 **- Test if a generalized additive model offers an improved fit.**
+
+First I fit this model and plot it to be able to see it, then I perform an anova analysis to compare the glm and gam models. 
+
+```{r echo=TRUE}
+
+fit.gam <- gam(noSpecies ~ temperature + I(temperature^2), data = chiro, family = quasipoisson)
+
+```
+
+```{r echo=FALSE, fig.cap="Figure 10. The chironomid data shown with the fitted generalized additive model (gam) shown as the red line, with temperature on the x-axis and number of species on the y-axis."}
+
+# plotting the model to get a look at it:
+ggplot(cbind(chiro, fit = fitted(fit.gam)), aes(x = temperature, y = noSpecies)) + 
+  geom_point() +
+  geom_line(aes(y = fit), colour = "red") +
+  labs(x = "Temperature", y = "Number of species")
+
+```
+
+```{r echo=TRUE}
+
+anova(fit.glm1, fit.gam, test = "Chisq")
+
+```
+
+Since both the residual degrees of freedom and residual deviance is the same for both models, using a generalized additive model did not improve the fit. 
 
 **- Can your model be improved by including additional terms?**
 
+First I make a model including all terms in the model that has so far been the best, to see if this is necessary. This is the model called `fit.glm2`. I perform an anova analysis on this and also get the summary output. 
+
+```{r echo=TRUE}
+
+fit.glm2 <- glm(noSpecies ~ temperature + I(temperature^2) + depth + pH + temperature:depth + temperature:pH + depth:pH, data = chiro, family = quasipoisson)
+anova(fit.glm2)
+summary(fit.glm2)
+
+```
+
+In the anova output all parameters except depth were improved in regards to overdispersion (residual deviance/residual df). 
+
+The summary output tells us that (using the p-value as an indicator) the pH should also be included in the model, in addition to the interaction term between temperature and pH. This interaction term being statistically significant indicates that the effect of temperature is dependent on the pH, and this should thus be included in the model. 
+
+I make a new model (`fit.glm3`) including the significant parameters on top of the previously "best" model. 
+
+```{r echo=TRUE}
+
+fit.glm3 <- glm(noSpecies ~ temperature * pH + I(temperature^2), data = chiro, family = quasipoisson)
+summary(fit.glm3)
+
+```
+
+I compare this new model to the one not including the additional terms to see if the difference is large enough that it is necessary to use the more complicated model. 
+
+```{r echo=TRUE}
+
+anova(fit.glm1, fit.glm3, test = "Chisq")
+
+```
+
+The output from the anova shows that the residual deviance is reduced, which means that there is less overdispersion. As the difference is quite large, the new model improved the fit enough to be used (also, the p-value shows that this is statistically significant). 
+
 **- Write a biological interpretation of your final model.**
+
+The final model:  
+`fit.glm3 <- glm(noSpecies ~ temperature * pH + I(temperature^2), data = chiro, family = quasipoisson)`
+
+This model tells us that the number of species in a given sample is dependant on the temperature and the pH, and that there is an interaction between temperature and pH, which means that the effect of temperature is dependant on the pH. 
